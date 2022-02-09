@@ -1,6 +1,6 @@
 import { OnCommandEvent, OnSayEvent } from "../../models"
 import { EventBus, Events } from "../../events"
-import { ShouldThrottle } from '../shouldThrottle'
+import { ShouldThrottle } from '../../shouldThrottle'
 
 /**
  * Sends a message to chat with details about Michael's Twitter

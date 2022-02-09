@@ -1,4 +1,4 @@
-import ComfyJS, { OnCheerExtra, OnCheerFlags, OnResubExtra, OnSubExtra, OnSubGiftExtra, OnSubMysteryGiftExtra } from "comfy.js";
+import ComfyJS, { OnCheerExtra, OnCheerFlags, OnCommandExtra, OnMessageFlags, OnResubExtra, OnSubExtra, OnSubGiftExtra, OnSubMysteryGiftExtra } from "comfy.js";
 import { SubMethod } from "tmi.js";
 
 import { Config, User } from '../types';
@@ -111,6 +111,33 @@ export abstract class EventMonitor {
 
     if (userInfo) {
       this.emit(Events.OnCheer, new OnCheerEvent(userInfo, message, bits, flags, extra))
+    }
+  }
+  
+  /**
+   * Handler for chat messages that include commands
+   * @param user 
+   * @param command 
+   * @param message 
+   * @param flags 
+   * @param extra 
+   */
+  private async onCommand(user: string, command: string, message: string, flags: OnMessageFlags, extra: OnCommandExtra) {
+    log(LogLevel.Info, `onCommand: ${user} sent the ${command} command`)
+    let userInfo: User
+
+    try {
+      userInfo = await Twitch.getUser(user)
+    }
+    catch (err) {
+      log(LogLevel.Error, `onCommand: getUser: ${err}`)
+    }
+
+    const stream = await State.getStream();
+
+    // Only respond to commands if we're streaming, or debugging
+    if (userInfo && (stream || process.env.NODE_ENV === "development")) {
+      this.emit(Events.OnCommand, new OnCommandEvent(userInfo, command, message, flags, extra, stream));
     }
   }
 

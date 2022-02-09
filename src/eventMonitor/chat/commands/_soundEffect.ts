@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { OnCommandEvent, OnSoundEffectEvent } from "../../models"
 import { EventBus, Events } from "../../events"
-import { ShouldThrottle } from '../shouldThrottle'
+import { ShouldThrottle } from '../../shouldThrottle'
 
 /**
  * Determines if the command is an audio clip and attempts to play if so

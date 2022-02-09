@@ -1,6 +1,6 @@
 import { OnCommandEvent, OnSayEvent, OnSoundEffectEvent } from '../../models'
 import { EventBus, Events } from '../../events'
-import { ShouldThrottle } from '../shouldThrottle'
+import { ShouldThrottle } from '../../shouldThrottle'
 
 /**
  * Alerts the streamer to pay attention to chat
