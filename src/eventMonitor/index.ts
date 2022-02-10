@@ -1,9 +1,10 @@
 import ComfyJS, { OnCheerExtra, OnCheerFlags, OnCommandExtra, OnMessageFlags, OnResubExtra, OnSubExtra, OnSubGiftExtra, OnSubMysteryGiftExtra } from "comfy.js";
 import { SubMethod } from "tmi.js";
 
-import { Config, User } from '../types';
+import { Config, OnCheerEvent, OnCommandEvent, OnJoinEvent, OnPartEvent, OnRaidEvent, OnSubEvent, User } from '../types';
 import { log, LogLevel } from '../common';
 import { Twitch } from "../integrations/twitch";
+import { Events } from "./events";
 
 // Should listen to all events in the following locations
 // and trigger events based on them:
@@ -24,7 +25,7 @@ export abstract class EventMonitor {
    */
   static init(config: Config) {
     this._config = config;
-    
+
     ComfyJS.Init(this._config.twitchBotUsername, this._config.twitchBotAuthToken, this._config.twitchChannelName);
 
     this._monitor();
@@ -113,7 +114,7 @@ export abstract class EventMonitor {
       this.emit(Events.OnCheer, new OnCheerEvent(userInfo, message, bits, flags, extra))
     }
   }
-  
+
   /**
    * Handler for chat messages that include commands
    * @param user 
@@ -122,7 +123,7 @@ export abstract class EventMonitor {
    * @param flags 
    * @param extra 
    */
-  private async onCommand(user: string, command: string, message: string, flags: OnMessageFlags, extra: OnCommandExtra) {
+  private static async _onCommand(user: string, command: string, message: string, flags: OnMessageFlags, extra: OnCommandExtra) {
     log(LogLevel.Info, `onCommand: ${user} sent the ${command} command`)
     let userInfo: User
 
