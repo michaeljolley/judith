@@ -1,7 +1,8 @@
+import { EventEmitter } from "events";
 import ComfyJS, { OnCheerExtra, OnCheerFlags, OnCommandExtra, OnMessageFlags, OnResubExtra, OnSubExtra, OnSubGiftExtra, OnSubMysteryGiftExtra } from "comfy.js";
 import { SubMethod } from "tmi.js";
 
-import { Config, OnCheerEvent, OnCommandEvent, OnJoinEvent, OnPartEvent, OnRaidEvent, OnSubEvent, User } from '../types';
+import { Config, IUserEvent, OnCheerEvent, OnCommandEvent, OnJoinEvent, OnPartEvent, OnRaidEvent, OnSubEvent, User } from '../types';
 import { log, LogLevel } from '../common';
 import { Twitch } from "../integrations/twitch";
 import { Events } from "./events";
@@ -14,10 +15,10 @@ import { Events } from "./events";
 // - Discord messages
 // - Patreon ??
 // - GitHub sponsor
-
 export abstract class EventMonitor {
 
   private static _config?: Config;
+  private static _eventEmitter: EventEmitter;
 
   /**
    * Initializes the EventMonitor to begin watching & emitting events
@@ -25,10 +26,15 @@ export abstract class EventMonitor {
    */
   static init(config: Config) {
     this._config = config;
+    this._eventEmitter = new EventEmitter();
 
     ComfyJS.Init(this._config.twitchBotUsername, this._config.twitchBotAuthToken, this._config.twitchChannelName);
 
     this._monitor();
+  }
+
+  public static on(eventType: Events, listener: (...args: any[]) => void): void {
+    this._eventEmitter.on(eventType, listener);
   }
 
   private static _monitor() {
@@ -49,6 +55,10 @@ export abstract class EventMonitor {
 
   }
 
+  private static _emit(eventType: Events, event: IUserEvent) {
+    this._eventEmitter.emit(eventType, event);
+  }
+
   /**
    * Handler for users joining Twitch chat
    * @param user 
@@ -66,7 +76,7 @@ export abstract class EventMonitor {
     }
 
     if (userInfo) {
-      this.emit(Events.OnJoin, new OnJoinEvent(userInfo, self))
+      this._emit(Events.OnJoin, new OnJoinEvent(userInfo, self))
     }
   }
 
@@ -87,7 +97,7 @@ export abstract class EventMonitor {
     }
 
     if (userInfo) {
-      this.emit(Events.OnPart, new OnPartEvent(userInfo, self))
+      this._emit(Events.OnPart, new OnPartEvent(userInfo, self))
     }
   }
 
@@ -111,7 +121,7 @@ export abstract class EventMonitor {
     }
 
     if (userInfo) {
-      this.emit(Events.OnCheer, new OnCheerEvent(userInfo, message, bits, flags, extra))
+      this._emit(Events.OnCheer, new OnCheerEvent(userInfo, message, bits, flags, extra))
     }
   }
 
@@ -138,7 +148,7 @@ export abstract class EventMonitor {
 
     // Only respond to commands if we're streaming, or debugging
     if (userInfo && (stream || process.env.NODE_ENV === "development")) {
-      this.emit(Events.OnCommand, new OnCommandEvent(userInfo, command, message, flags, extra, stream));
+      this._emit(Events.OnCommand, new OnCommandEvent(userInfo, command, message, flags, extra, stream));
     }
   }
 
@@ -170,7 +180,7 @@ export abstract class EventMonitor {
     }
 
     if (userInfo) {
-      this.emit(Events.OnRaid, new OnRaidEvent(userInfo, viewers))
+      this._emit(Events.OnRaid, new OnRaidEvent(userInfo, viewers))
     }
   }
 
@@ -201,7 +211,7 @@ export abstract class EventMonitor {
     }
 
     if (userInfo) {
-      this.emit(Events.OnSub, new OnSubEvent(userInfo, message, subTierInfo, extra))
+      this._emit(Events.OnSub, new OnSubEvent(userInfo, message, subTierInfo, extra))
     }
   }
 
@@ -234,7 +244,7 @@ export abstract class EventMonitor {
     }
 
     if (userInfo) {
-      this.emit(Events.OnSub, new OnSubEvent(userInfo, '', subTierInfo, extra, null, gifterInfo))
+      this._emit(Events.OnSub, new OnSubEvent(userInfo, '', subTierInfo, extra, null, gifterInfo))
     }
   }
 
@@ -259,7 +269,7 @@ export abstract class EventMonitor {
     }
 
     if (userInfo) {
-      this.emit(Events.OnSub, new OnSubEvent(userInfo, message, subTierInfo, extra, cumulativeMonths))
+      this._emit(Events.OnSub, new OnSubEvent(userInfo, message, subTierInfo, extra, cumulativeMonths))
     }
   }
 

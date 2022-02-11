@@ -6,6 +6,7 @@ export * from './User';
 /**
  * Event objects
  */
+export * from './IUserEvent';
 export * from './OnChatMessageEvent';
 export * from './OnCheerEvent';
 export * from './OnCommandEvent';
