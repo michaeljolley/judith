@@ -15,7 +15,7 @@
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix",
     "test": "mocha -r ts-node/register tests/**/*spec.ts --insect",
-    "coverage": "nyc mocha -r ts-node/register src/**/*spec.ts --insect"
+    "coverage": "nyc mocha -r ts-node/register tests/**/*spec.ts --insect"
   },
   "repository": {
     "type": "git",
