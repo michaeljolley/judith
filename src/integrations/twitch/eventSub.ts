@@ -34,7 +34,7 @@ webhookRouter.post('/stream', Twitch.validateWebhook, async (request: Request, r
 
       switch (payload.subscription.type) {
 
-        case "stream.online":
+        case "stream.online": {
           const stream = new Stream(
             payload.event.id,
             payload.event.started_at,
@@ -43,14 +43,15 @@ webhookRouter.post('/stream', Twitch.validateWebhook, async (request: Request, r
           );
           emit(BotEvents.OnStreamChange, new OnStreamChangeEvent(stream));
           break;
-
-        case "stream.offline":
+        }
+        case "stream.offline": {
           const existingStream = await State.getStream()
 
           if (existingStream) {
             emit(BotEvents.OnStreamEnd, new OnStreamEndEvent(existingStream));
           }
           break;
+        }
       }
 
       response.status(204).send();
@@ -70,11 +71,11 @@ webhookRouter.post('/follow', Twitch.validateWebhook, async (request: Request, r
 
   switch (request.headers['twitch-eventsub-message-type']) {
 
-    case 'webhook_callback_verification': // Verify the endpoint for Twitch 
+    case 'webhook_callback_verification': { // Verify the endpoint for Twitch 
       response.status(200).send(payload.challenge);
       break;
-
-    case 'notification': // Handle the event from Twitch
+    }
+    case 'notification': {// Handle the event from Twitch
 
       let userInfo: User
       try {
@@ -88,11 +89,12 @@ webhookRouter.post('/follow', Twitch.validateWebhook, async (request: Request, r
 
       response.status(204);
       break;
-
-    case 'revocation': // Re-register the webhook with Twitch
+    }
+    case 'revocation': {// Re-register the webhook with Twitch
 
       response.status(204);
       break;
+    }
   }
 })
 

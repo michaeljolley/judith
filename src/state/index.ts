@@ -1,6 +1,6 @@
 import { log, LogLevel } from "../common";
 import { EventBus } from "../events";
-import { Fauna, Twitch } from "../integrations";
+import { Twitch } from "../integrations";
 import {
   BotEvents,
   OnStreamChangeEvent,

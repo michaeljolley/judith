@@ -4,8 +4,6 @@ import { Server as HttpServer } from 'http'
 import { EventBus } from '../events'
 import {
   BotEvents,
-  log, 
-  LogLevel,
   OnChatMessageEvent,
   OnCheerEvent,
   OnCreditRollEvent,
@@ -47,6 +45,8 @@ export class IO {
       (onChatMessageEvent: OnChatMessageEvent) => this.onChatMessage(onChatMessageEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnCheer,
       (onCheerEvent: OnCheerEvent) => this.onCheer(onCheerEvent))
+    EventBus.eventEmitter.addListener(BotEvents.OnCreditRoll,
+      (onCreditRoll: OnCreditRollEvent) => this.onCreditRoll(onCreditRoll))
     EventBus.eventEmitter.addListener(BotEvents.OnFollow,
       (onFollowEvent: OnFollowEvent) => this.onFollow(onFollowEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnJoin,
@@ -77,6 +77,10 @@ export class IO {
 
   private onCheer(onCheerEvent: OnCheerEvent) {
     this.io.emit(BotEvents.OnCheer, onCheerEvent)
+  }
+
+  private onCreditRoll(onCreditRollEvent: OnCreditRollEvent) {
+    this.io.emit(BotEvents.OnCreditRoll, onCreditRollEvent)
   }
 
   private onFollow(onFollowEvent: OnFollowEvent) {

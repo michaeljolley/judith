@@ -2,6 +2,7 @@ export enum BotEvents {
   OnChatMessage = 'onChatMessage',
   OnCheer = 'onCheer',
   OnCommand = 'onCommand',
+  OnCreditRoll = 'onCreditRoll',
   OnFollow = 'onFollow',
   OnJoin = 'onJoin',
   OnPart = 'onPart',
