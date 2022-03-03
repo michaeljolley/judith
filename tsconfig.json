@@ -6,9 +6,12 @@
     "downlevelIteration": true,
     "rootDirs": [
       "./src",
-      "./tests"
     ],
     "sourceMap": true,
     "esModuleInterop": true
-  }
+  },
+  "exclude": [
+    "tests",
+    "node_modules"
+  ]
 }
