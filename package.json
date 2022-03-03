@@ -1,6 +1,6 @@
 {
-  "name": "hotpepperbot",
-  "description": "A repository template for open-source demos, guides and sample apps. Description here.",
+  "name": "judith",
+  "description": "A Twitch chat bot with built in overlays.",
   "version": "1.0.2",
   "main": "index.js",
   "scripts": {
@@ -19,14 +19,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepgram-devs/hotpepperbot.git"
+    "url": "git+https://github.com/builders-club/judith.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/deepgram-devs/hotpepperbot/issues"
+    "url": "https://github.com/builders-club/judith/issues"
   },
-  "homepage": "https://github.com/deepgram-devs/hotpepperbot#readme",
+  "homepage": "https://github.com/builders-club/judith#readme",
   "dependencies": {
     "axios": "^0.26.0",
     "comfy.js": "^1.1.13",
