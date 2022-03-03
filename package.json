@@ -1,7 +1,7 @@
 {
   "name": "hotpepperbot",
   "description": "A repository template for open-source demos, guides and sample apps. Description here.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
