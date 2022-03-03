@@ -69,6 +69,8 @@ export class IO {
       (onSubEvent: OnSubEvent) => this.onSub(onSubEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnRaid,
       (onRaidEvent: OnRaidEvent) => this.onRaid(onRaidEvent))
+    EventBus.eventEmitter.addListener(BotEvents.RequestCreditRoll,
+      () => this.requestCreditRoll());
   }
 
   private onChatMessage(onChatMessageEvent: OnChatMessageEvent) {
@@ -133,5 +135,9 @@ export class IO {
 
   private onFullOrbit(streamDate: string) {
     EventBus.eventEmitter.emit(BotEvents.OnFullOrbit, streamDate);
+  }
+
+  private requestCreditRoll() {
+    EventBus.eventEmitter.emit(BotEvents.RequestCreditRoll);
   }
 }

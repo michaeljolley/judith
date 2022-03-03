@@ -17,5 +17,7 @@ export enum BotEvents {
   OnSay = 'onSay',
 
   OnOrbit = 'onOrbit',
-  OnFullOrbit = 'onFullOrbit'
+  OnFullOrbit = 'onFullOrbit',
+
+  RequestCreditRoll = 'requestCreditRoll'
 }
