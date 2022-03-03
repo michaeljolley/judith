@@ -13,6 +13,7 @@ export * from './hype';
 export * from './instagram';
 export * from './livecoders';
 export * from './patreon';
+export * from './rollCredits';
 export * from './shoutOut';
 export * from './stop';
 export * from './store';
