@@ -1,6 +1,7 @@
+import { NextFunction } from 'express';
 import { TwitchAPI } from './api'
-import { User, Stream, Config } from '../../types'
-import { Cache, CacheType } from '../cache'
+import { User, Stream, Config } from '../../common'
+import { Cache, CacheType } from '../../cache'
 import { LogLevel, log } from '../../common'
 import { Fauna } from '../fauna'
 
@@ -14,6 +15,10 @@ export abstract class Twitch {
     this.twitchAPI = new TwitchAPI(config)
   }
 
+  public static async registerWebhooks(): Promise<void> {
+    this.twitchAPI.registerWebhooks();
+  }
+  
   /**
    * Attempts to retrieve a user from the cache and, if needed, the Twitch API
    * @param login Twitch login of user to retrieve
@@ -93,5 +98,9 @@ export abstract class Twitch {
     }
 
     return stream
+  }
+  
+  public static validateWebhook(request: Request, response: Response, next: NextFunction): unknown {
+    return Twitch.twitchAPI.validateWebhook(request, response, next);
   }
 }

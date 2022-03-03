@@ -1,7 +1,5 @@
 import { Client, query, ClientConfig } from 'faunadb'
-import { Stream, User } from '../../types'
-import { Action } from './types/Action'
-import { log, LogLevel } from '../../common'
+import { Action, Stream, log, LogLevel, User } from '../../common'
 
 export abstract class FaunaClient {
 
@@ -210,7 +208,6 @@ export abstract class FaunaClient {
         query.Map(
           query.Paginate(
             query.Union(
-              query.Match(query.Index("actions_date_type"), [actionDate, 'onDonation']),
               query.Match(query.Index("actions_date_type"), [actionDate, 'onCheer']),
               query.Match(query.Index("actions_date_type"), [actionDate, 'onSub']),
             ),

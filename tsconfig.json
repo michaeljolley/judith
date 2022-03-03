@@ -7,6 +7,7 @@
     "rootDirs": [
       "./src"
     ],
+    "sourceMap": true,
     "esModuleInterop": true
   }
 }

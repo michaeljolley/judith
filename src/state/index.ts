@@ -1,21 +1,22 @@
 import { log, LogLevel } from "../common";
+import { EventBus } from "../events";
 import { Fauna, Twitch } from "../integrations";
 import {
-  OnCreditRollEvent,
+  BotEvents,
   OnStreamChangeEvent,
   OnStreamStartEvent,
   Stream
-} from "../types";
+} from "../common";
 
 export abstract class State {
 
   private static stream: Stream;
 
   public static init(): void {
-    EventBus.eventEmitter.addListener(Events.OnStreamChange,
+    EventBus.eventEmitter.addListener(BotEvents.OnStreamChange,
       (onStreamChangeEvent: OnStreamChangeEvent) => this.onStreamChange(onStreamChangeEvent))
-    EventBus.eventEmitter.addListener(Events.OnStreamEnd, () => this.onStreamEnd())
-    EventBus.eventEmitter.addListener(Events.OnStreamStart,
+    EventBus.eventEmitter.addListener(BotEvents.OnStreamEnd, () => this.onStreamEnd())
+    EventBus.eventEmitter.addListener(BotEvents.OnStreamStart,
       (onStreamStartEvent: OnStreamStartEvent) => this.onStreamStart(onStreamStartEvent))
   }
 
@@ -45,7 +46,9 @@ export abstract class State {
   }
 
   private static onStreamChange(onStreamChangeEvent: OnStreamChangeEvent): void {
-    if (this.stream) {
+    if (!this.stream) {
+      EventBus.eventEmitter.emit(BotEvents.OnStreamStart, new OnStreamStartEvent(onStreamChangeEvent.stream))
+    } else {
       this.stream = onStreamChangeEvent.stream;
     }
   }
