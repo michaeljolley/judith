@@ -138,6 +138,6 @@ export class IO {
   }
 
   private requestCreditRoll() {
-    EventBus.eventEmitter.emit(BotEvents.RequestCreditRoll);
+    EventBus.eventEmitter.emit(BotEvents.RequestCreditRoll, null);
   }
 }
