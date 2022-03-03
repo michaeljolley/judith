@@ -11,6 +11,7 @@ import {
   patreon,
   shoutOut, 
   store, 
+  stop,
   theme, 
   twitter, 
   uses,
