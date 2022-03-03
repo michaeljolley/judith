@@ -69,8 +69,6 @@ webhookRouter.post('/follow', Twitch.validateWebhook, async (request: Request, r
   const payload: TwitchFollowEvent = JSON.parse(request.body);
   response.contentType('text/plain');
 
-  log(LogLevel.Info, `Webhooks: /follow ${JSON.stringify(payload)}`)
-
   switch (request.headers['twitch-eventsub-message-type']) {
 
     case 'webhook_callback_verification': { // Verify the endpoint for Twitch 
@@ -82,8 +80,6 @@ webhookRouter.post('/follow', Twitch.validateWebhook, async (request: Request, r
       let userInfo: User
       try {
         userInfo = await Twitch.getUser(payload.event.user_name.toLocaleLowerCase())
-        
-        log(LogLevel.Info, `Webhooks: /follow user: ${JSON.stringify(userInfo)}`)
       }
       catch (err) {
         log(LogLevel.Error, `webhooks: /follow - ${err}`)
@@ -91,16 +87,11 @@ webhookRouter.post('/follow', Twitch.validateWebhook, async (request: Request, r
 
       emit(BotEvents.OnFollow, new OnFollowEvent(userInfo));
 
-      log(LogLevel.Info, `Webhooks: /follow post emit`)
-
-
       response.status(204).send();
-      
-      log(LogLevel.Info, `Webhooks: /follow post response send`)
       break;
     }
     case 'revocation': {// Re-register the webhook with Twitch
-
+      
       response.status(204).send();
       break;
     }
