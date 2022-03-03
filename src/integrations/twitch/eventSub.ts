@@ -69,8 +69,6 @@ webhookRouter.post('/follow', Twitch.validateWebhook, async (request: Request, r
   const payload: TwitchFollowEvent = JSON.parse(request.body);
   response.contentType('text/plain');
 
-  log(LogLevel.Info, `webhooks: /follow - ${JSON.stringify(payload)}`)
-
   switch (request.headers['twitch-eventsub-message-type']) {
 
     case 'webhook_callback_verification': { // Verify the endpoint for Twitch 
