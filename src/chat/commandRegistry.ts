@@ -15,8 +15,8 @@ import {
   theme, 
   twitter, 
   uses,
-  youtube,
-  rollCredits} from "./commands";
+  youtube}
+   from "./commands";
 import { Command } from "../common";
 
 export abstract class CommandRegistry {
@@ -36,7 +36,6 @@ export abstract class CommandRegistry {
     this.commands.push(new Command('hype', hype))
     this.commands.push(new Command('instagram', instagram))
     this.commands.push(new Command('patreon', patreon))
-    this.commands.push(new Command('credits', rollCredits))
     this.commands.push(new Command('so', shoutOut))
     this.commands.push(new Command('stop', stop))
     this.commands.push(new Command('store', store))

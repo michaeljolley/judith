@@ -29,9 +29,11 @@ export class IO {
 
     this.io.on('connect', (conn: io.Socket) => {
 
-      conn.on('onOrbit', (streamDate: string) => this.onOrbit(streamDate))
+      conn.on(BotEvents.OnOrbit, (streamDate: string) => this.onOrbit(streamDate))
 
-      conn.on('onFullOrbit', (streamDate: string) => this.onFullOrbit(streamDate))
+      conn.on(BotEvents.OnFullOrbit, (streamDate: string) => this.onFullOrbit(streamDate))
+
+      conn.on(BotEvents.RequestCreditRoll, (streamDate: string) => this.requestCreditRoll(streamDate))
 
       // Ensure the connection is from the bots overlays and not
       // and external actor.
@@ -69,8 +71,6 @@ export class IO {
       (onSubEvent: OnSubEvent) => this.onSub(onSubEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnRaid,
       (onRaidEvent: OnRaidEvent) => this.onRaid(onRaidEvent))
-    EventBus.eventEmitter.addListener(BotEvents.RequestCreditRoll,
-      () => this.requestCreditRoll());
   }
 
   private onChatMessage(onChatMessageEvent: OnChatMessageEvent) {
@@ -137,7 +137,7 @@ export class IO {
     EventBus.eventEmitter.emit(BotEvents.OnFullOrbit, streamDate);
   }
 
-  private requestCreditRoll() {
-    EventBus.eventEmitter.emit(BotEvents.RequestCreditRoll, null);
+  private requestCreditRoll(streamDate: string) {
+    EventBus.eventEmitter.emit(BotEvents.RequestCreditRoll, streamDate);
   }
 }

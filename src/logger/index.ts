@@ -12,7 +12,9 @@ import {
   OnRaidEvent,
   Action,
   Activity,
-  User
+  User,
+  Credit,
+  OnCreditRollEvent
 } from "../common"
 
 
@@ -32,6 +34,7 @@ export abstract class Logger {
     EventBus.eventEmitter.addListener(BotEvents.OnStreamEnd, () => this.onStreamEnd())
     EventBus.eventEmitter.addListener(BotEvents.OnOrbit, (streamDate: string) => this.onOrbit(streamDate))
     EventBus.eventEmitter.addListener(BotEvents.OnFullOrbit, (streamDate: string) => this.onFullOrbit(streamDate))
+    EventBus.eventEmitter.addListener(BotEvents.RequestCreditRoll, (streamDate: string) => this.requestCreditRoll(streamDate))
   }
 
   private static async onChatMessage(onChatMessageEvent: OnChatMessageEvent) {
@@ -300,6 +303,41 @@ export abstract class Logger {
     }
     catch (err) {
       log(LogLevel.Error, `Logger: onFullOrbit: ${err}`)
+    }
+  }
+
+  private static async requestCreditRoll(streamDate: string): Promise<void> {
+    try {
+      const actions: [string[]] = await Fauna.getCredits(streamDate);
+
+      const distinctCredits: Credit[] = [];
+
+      const credits: Credit[] = actions.map((payload: string[]) => {
+        return new Credit(payload[1], payload[2]);
+      });
+
+      credits.forEach((credit: Credit) => {
+        if (!distinctCredits.find(f => f.displayName === credit.displayName)) {
+          distinctCredits.push(credit);
+        }
+      });
+
+      distinctCredits.forEach((credit) => {
+        credit.onRaid = actions.some(a => a[1] === credit.displayName && a[3] === 'onRaid');
+        credit.onCheer = actions.some(a => a[1] === credit.displayName && a[3] === 'onCheer');
+        credit.onSub = actions.some(a => a[1] === credit.displayName && a[3] === 'onSub');
+        credit.onDonation = actions.some(a => a[1] === credit.displayName && a[3] === 'onDonation');
+        const sponsor = actions.find(a => a[1] === credit.displayName && a[3] === 'onSponsor');
+        if (sponsor) {
+          credit.onSponsor = true;
+          credit.tier = parseInt(sponsor[4]);
+        }
+      });
+
+      const onCreditRollEvent = new OnCreditRollEvent(distinctCredits);
+      EventBus.eventEmitter.emit(BotEvents.OnCreditRoll, onCreditRollEvent);
+    } catch (err) {
+      log(LogLevel.Error, `State: requestCreditRoll: ${err}`);
     }
   }
 }
