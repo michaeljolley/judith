@@ -1,3 +1,5 @@
+import { OnVoteWinnerEvent, PollVotes } from './../common/types/onVoteWinnerEvent';
+import { OnVoteEndEvent } from './../common/types/onVoteEndEvent';
 import ComfyJS, { 
   EmoteSet, 
   OnCheerExtra, 
@@ -11,7 +13,7 @@ import ComfyJS, {
   OnSubMysteryGiftExtra } from 'comfy.js'
 import { SubMethods } from 'tmi.js'
 
-import { BotEvents, log, LogLevel } from '../common'
+import { BotEvents, log, LogLevel, OnVoteEvent, OnVoteStartEvent } from '../common'
 import { 
   Config, 
   OnChatMessageEvent, 
@@ -25,7 +27,7 @@ import {
   OnPointRedemptionEvent, 
   OnCommandEvent } from '../common'
 import { EventBus } from '../events'
-import { Twitch } from '../integrations'
+import { Fauna, Twitch } from '../integrations'
 import { State } from '../state';
 import { CommandMonitor } from './commandMonitor'
 import sanitizeHtml from 'sanitize-html'
@@ -36,6 +38,7 @@ import sanitizeHtml from 'sanitize-html'
 export class ChatMonitor {
 
   commandMonitor: CommandMonitor
+  pollInterval: any
 
   constructor(private config: Config) {
     ComfyJS.onChat = this.onChat.bind(this)
@@ -54,6 +57,10 @@ export class ChatMonitor {
 
     EventBus.eventEmitter.addListener(BotEvents.OnSay,
       (onSayEvent: OnSayEvent) => this.onSay(onSayEvent))
+    EventBus.eventEmitter.addListener(BotEvents.OnVoteStart,
+      (onVoteStartEvent: OnVoteStartEvent) => this.onVoteStart(onVoteStartEvent))
+    EventBus.eventEmitter.addListener(BotEvents.OnVoteEnd,
+      (onVoteEndEvent: OnVoteEndEvent) => this.onVoteEnd(onVoteEndEvent))
 
     this.commandMonitor = new CommandMonitor()
   }
@@ -77,6 +84,24 @@ export class ChatMonitor {
 
   private onSay(onSayEvent: OnSayEvent) {
     ComfyJS.Say(onSayEvent.message, this.config.twitchChannelName)
+  }
+
+  private onVoteStart(onVoteStartEvent: OnVoteStartEvent) {
+    this.pollInterval = setInterval(async () => {
+      this.emit(BotEvents.OnVoteEnd, new OnVoteEndEvent(onVoteStartEvent.pollId, new Date().toISOString()))
+    }, onVoteStartEvent.lengthInSeconds * 1000);
+  }
+
+  private async onVoteEnd(onVoteEndEvent: OnVoteEndEvent) {
+    const poll = await Fauna.getPoll(onVoteEndEvent.pollId)
+    const actions = await Fauna.getVotingActions(poll._id)
+
+    const votes = actions.map(m => {
+      const eventData = m.eventData as OnVoteEvent
+      return new PollVotes(eventData.user, eventData.choice)
+    })
+
+    this.emit(BotEvents.OnVoteWinner, new OnVoteWinnerEvent(poll.id, poll.title, votes))
   }
 
   /**

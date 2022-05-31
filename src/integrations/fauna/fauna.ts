@@ -1,5 +1,5 @@
 import { Client, query, ClientConfig } from 'faunadb'
-import { Action, Stream, log, LogLevel, User } from '../../common'
+import { Action, Stream, log, LogLevel, Poll, User } from '../../common'
 
 export abstract class FaunaClient {
 
@@ -121,7 +121,7 @@ export abstract class FaunaClient {
 
     if (stream._id || existingStream) {
       const _id = stream._id || existingStream._id
-      // Update user
+      // Update stream
       try {
         const response = await this.client.query<FaunaDocument>(
           query.Replace(query.Ref(query.Collection("streams"), _id), {
@@ -251,6 +251,128 @@ export abstract class FaunaClient {
     }
     return actions
   }
+
+  public static async getActivePoll(streamDate: string): Promise<Poll | undefined> {
+    if (!this.client) {
+      return undefined
+    }
+
+    let poll: Poll | undefined
+    try {
+      const response = await this.client.query<FaunaResponse>(
+        query.Paginate(
+          query.Distinct(
+            query.Match(query.Index("polls_streamDate"), streamDate)
+          ),
+          { size: 1000 }
+        ),
+      )
+      if (response.data && response.data.length > 0) {
+        const data = response.data as FaunaDocument[]
+        const polls = data.map(m => this.mapResponse<Poll>(m))
+        poll = polls.find(f => f.ended_at === null)
+      }
+    }
+    catch (err) {
+      log(LogLevel.Error, `Fauna:getActivePoll - ${err}`)
+    }
+    return poll
+  }
+  
+  public static async getPoll(pollId: string): Promise<Poll | undefined> {
+    if (!this.client) {
+      return undefined
+    }
+
+    let poll: Poll
+    try {
+      const response = await this.client.query<FaunaResponse>(
+        query.Map(
+          query.Paginate(
+            query.Match(query.Index("polls_id"), pollId)),
+          query.Lambda("polls", query.Get((query.Var("polls"))))
+        )
+      )
+      if (response.data && response.data.length > 0) {
+        poll = this.mapResponse(response.data[0] as FaunaDocument)
+      }
+    }
+    catch (err) {
+      log(LogLevel.Error, `Fauna:getPoll - ${err}`)
+    }
+    return poll
+  }
+  
+  public static async savePoll(poll: Poll): Promise<Poll> {
+     if (!this.client) {
+      return undefined
+    }
+
+    let savedPoll: Poll
+
+    if (poll._id) {
+      const existingPoll: Stream = await this.getPoll(poll._id)
+
+      if (existingPoll) {
+        // Update poll
+        try {
+          const response = await this.client.query<FaunaDocument>(
+            query.Replace(query.Ref(query.Collection("polls"), existingPoll._id), {
+              data: poll
+            })
+          )
+          savedPoll = this.mapResponse(response)
+        }
+        catch (err) {
+          log(LogLevel.Error, `Fauna:savePoll - Update: ${err}`)
+        }
+      }
+    } else {
+      // Create poll
+      try {
+        const response = await this.client.query<FaunaDocument>(
+          query.Create(query.Collection("polls"), {
+            data: poll
+          })
+        )
+        savedPoll = this.mapResponse(response)
+      }
+      catch (err) {
+        log(LogLevel.Error, `Fauna:savePoll - Create: ${err}`)
+      }
+    }
+    return savedPoll
+  }
+  
+  public static async getVotingActions(pollId: string): Promise<Action[] | undefined> {
+    if (!this.client) {
+      return undefined
+    }
+
+    let actions: Action[]
+    try {
+      const response = await this.client.query<FaunaResponse>(
+        query.Map(
+          query.Paginate(
+            query.Union(
+              query.Match(query.Index("actions_poll_type"), [pollId, 'onVote']),
+            ),
+            { size: 500 }
+          ),
+          query.Lambda("actions", query.Get((query.Var("actions"))))
+        ) 
+      )
+      if (response.data && response.data.length > 0) {
+        const data = response.data as FaunaDocument[];
+        actions = data.map(m => this.mapResponse(m))
+      }
+    }
+    catch (err) {
+      log(LogLevel.Error, `Fauna:getVotingActions - ${err}`)
+    }
+    return actions
+  }
+
 }
 
 interface FaunaResponse {
