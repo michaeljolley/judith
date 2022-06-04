@@ -1,81 +1,68 @@
-
 Vue.config.devtools = true;
 
-Vue.component('chatMessage', {
-  template: '<div class="message" v-bind:class="{ hide: hideMe, mod: onChatMessageEvent.flags.mod, vip: onChatMessageEvent.flags.vip }" v-bind:style="{ order: total - ind }"><div class="panel"><div class="user" v-bind:style="{ backgroundImage: `url(${onChatMessageEvent.user.avatar_url})` }"></div><div class="bubble"><div v-html="onChatMessageEvent.sanitizedMessage"></div><div class="name">{{onChatMessageEvent.user.display_name}}</div></div></div></div>',
-  props: ['ind', 'onChatMessageEvent', 'total'],
-  data: function () {
-    return {
-      destroyTimeout: null,
-      hideMe: false,
-    }
-  },
-  mounted: function () {
-    this.destroyTimeout = setTimeout(() => {
-      this.hideMe = true;
-      setTimeout(() => {
-        this.$emit('removeItem', this.onChatMessageEvent.id);
-      }, 1400)
-    }, 60000);
-  },
-  destroyed: function () {
-    clearTimeout(this.destroyTimeout);
-  }
+Vue.component('vote', {
+  template: `
+    <li class="vote" v-bind:style="{ backgroundImage: 'url(${avatar_url})' }"></li>`,
+  props: ['avatar_url']
+});
+
+Vue.component('choice', {
+  template: `
+    <div class="choice" v-bind:class="{ hide: hideMe }" v-bind:style="{ order: total - ind }">
+      <ul class="votes">
+        <vote v-for="let vote of votes" :key="vote.user.login" :avatar_url="vote.user.avatar_url"/>
+      </ul>
+    </div>`,
+  props: ['name', 'votes', 'hideMe']
 });
 
 const app = new Vue({
   el: '#app',
   data: function () {
     return {
-      messages: [],
+      poll: null,
+      endInterval: null,
       socket: null
     };
   },
   methods: {
-    addMessage(onChatMessageEvent) {
-      this.messages = [...this.messages, onChatMessageEvent];
-      Vue.nextTick(this.checkOverflow);
+    onVoteEnd() {
+
     },
-    removeMessages(count) {
-      this.messages = this.messages.slice(count);
+    onVoteStart(onVoteStartEvent) {
+
     },
-    removeItem(id) {
-      this.messages = this.messages.filter(f => f.id !== id);
+    onVote(onVoteEvent) {
+
     },
-    checkOverflow() {
-      const messages = this.$refs.message;
-      if (messages) {
-        const badGuys = messages.filter(f => {
-          return f.$el.getBoundingClientRect().top < 5
-        }).length;
-        this.removeMessages(badGuys);
-      }
+    onVoteWinner(onVoteWinnerEvent) {
+
     }
   },
   created() {
     this.socket = io.connect('/');
 
-    this.socket.on('onVoteWinner', onVoteWinnerEvent => {
-      // this.addMessage(onVoteWinnerEvent);
-    });
+    this.socket.on('onVoteWinner', onVoteWinnerEvent => 
+      this.onVoteWinner(onVoteWinnerEvent));
 
-    this.socket.on('onVote', onVoteEvent => {
-      // this.addMessage(onVoteWinnerEvent);
-    });
+    this.socket.on('onVote', onVoteEvent => this.onVote(onVoteEvent));
 
-    this.socket.on('onVoteStart', onVoteStartEvent => {
-      // this.addMessage(onVoteWinnerEvent);
-    });
+    this.socket.on('onVoteStart', onVoteStartEvent => 
+      this.onVoteStart(onVoteStartEvent));
 
     this.socket.on('onVoteEnd', onVoteEndEvent => {
-      // this.addMessage(onVoteWinnerEvent);
+      // Wait 5 seconds before removing everything to make sure we don't
+      // get an onVoteWinner event.
+      this.endInterval = setInterval(() => {
+        this.onVoteEnd();
+      }, 5000);
     });
 
     this.socket.on('reconnect', () => {
       window.location.reload();
     });
 
-    console.log("We're loaded and listening to 'onChatMessage' from socket.io");
+    console.log("We're loaded and listening to polls from socket.io");
   },
   template: `<div class="chat">
               <transition-group name="list" @after-leave="checkOverflow">
