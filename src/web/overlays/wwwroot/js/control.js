@@ -18,6 +18,16 @@ const app = new Vue({
     },
     rollCredits() {
       this.socket.emit('requestCreditRoll', this.streamDate)
+    },
+    startPoll() {
+      this.socket.emit('onPollStart', {
+        pollId: this.streamDate,
+        lengthInSeconds: 120,
+        started_at: (new Date()).toISOString()
+      })
+    },
+    endPoll() {
+      this.socket.emit('onPollEnd')
     }
   },
   mounted() {
@@ -34,6 +44,8 @@ const app = new Vue({
       <input type="text" v-model="streamDate" id="streamDate"/><br/>
       <button type="submit" @click.prevent="sendOrbit">Send onOrbit</button><br/>
       <button type="submit" @click.prevent="sendFullOrbit">Send onFullOrbit</button><br/>
-      <button type="submit" @click.prevent="rollCredits">Roll Credits</button>
+      <button type="submit" @click.prevent="rollCredits">Roll Credits</button><br/>
+      <button type="submit" @click.prevent="startPoll">Start Poll</button><br/>
+      <button type="submit" @click.prevent="endPoll">End Poll</button>
     </div>`
 });

@@ -15,6 +15,7 @@ import {
   theme, 
   twitter, 
   uses,
+  vote,
   youtube}
    from "./commands";
 import { Command } from "../common";
@@ -41,6 +42,7 @@ export abstract class CommandRegistry {
     this.commands.push(new Command('store', store))
     this.commands.push(new Command('theme', theme))
     this.commands.push(new Command('twitter', twitter))
+    this.commands.push(new Command('vote', vote))
     this.commands.push(new Command('youtube', youtube))
   }
 

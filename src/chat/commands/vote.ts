@@ -25,7 +25,7 @@ export async function vote(onCommandEvent: OnCommandEvent): Promise<void> {
   if (splitMessage.length === 1 && 
       poll.choices.find(f => f.name.toLocaleLowerCase() === splitMessage[0])) {
     // If so, record the vote.
-    EventBus.eventEmitter.emit(BotEvents.OnVote, new OnVoteEvent(poll._id, splitMessage[0], onCommandEvent.user))
+    EventBus.eventEmitter.emit(BotEvents.OnVote, new OnVoteEvent(poll.id, splitMessage[0], onCommandEvent.user))
     return
   }
   

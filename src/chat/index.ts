@@ -31,6 +31,7 @@ import { Fauna, Twitch } from '../integrations'
 import { State } from '../state';
 import { CommandMonitor } from './commandMonitor'
 import sanitizeHtml from 'sanitize-html'
+import { FaunaClient } from '../integrations/fauna/fauna';
 
 /**
  * ChatMonitor connects and monitors chat messages within Twitch
@@ -58,9 +59,9 @@ export class ChatMonitor {
     EventBus.eventEmitter.addListener(BotEvents.OnSay,
       (onSayEvent: OnSayEvent) => this.onSay(onSayEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnVoteStart,
-      (onVoteStartEvent: OnVoteStartEvent) => this.onVoteStart(onVoteStartEvent))
+      async (onVoteStartEvent: OnVoteStartEvent) => await this.onVoteStart(onVoteStartEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnVoteEnd,
-      (onVoteEndEvent: OnVoteEndEvent) => this.onVoteEnd(onVoteEndEvent))
+      async (onVoteEndEvent: OnVoteEndEvent) => await this.onVoteEnd(onVoteEndEvent))
 
     this.commandMonitor = new CommandMonitor()
   }
@@ -86,16 +87,24 @@ export class ChatMonitor {
     ComfyJS.Say(onSayEvent.message, this.config.twitchChannelName)
   }
 
-  private onVoteStart(onVoteStartEvent: OnVoteStartEvent) {
+  private async onVoteStart(onVoteStartEvent: OnVoteStartEvent) {
+    
+    log(LogLevel.Info, `onVoteStart: ${JSON.stringify(onVoteStartEvent)}`)
     this.pollInterval = setInterval(async () => {
       this.emit(BotEvents.OnVoteEnd, new OnVoteEndEvent(onVoteStartEvent.pollId, new Date().toISOString()))
     }, onVoteStartEvent.lengthInSeconds * 1000);
+    
+    const poll = await FaunaClient.getPoll(onVoteStartEvent.pollId);
+    if (poll) {
+      ComfyJS.Say(`The ${poll.title} poll has started. Your options are: ${poll.choices.map(m => m.name.toLocaleLowerCase()).join(", ")}`, this.config.twitchChannelName);
+    }
   }
 
   private async onVoteEnd(onVoteEndEvent: OnVoteEndEvent) {
     const poll = await Fauna.getPoll(onVoteEndEvent.pollId)
     const actions = await Fauna.getVotingActions(poll._id)
 
+    log(LogLevel.Info, `onVoteEnd: ${JSON.stringify(onVoteEndEvent)}`)
     const votes = actions.map(m => {
       const eventData = m.eventData as OnVoteEvent
       return new PollVotes(eventData.user, eventData.choice)

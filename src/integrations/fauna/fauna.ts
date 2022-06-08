@@ -268,9 +268,11 @@ export abstract class FaunaClient {
         ),
       )
       if (response.data && response.data.length > 0) {
-        const data = response.data as FaunaDocument[]
-        const polls = data.map(m => this.mapResponse<Poll>(m))
-        poll = polls.find(f => f.ended_at === null)
+        const streamPolls = response.data as [string[]]
+        const polls = streamPolls.find(p => p[1] && !p[2])
+        if (polls) {
+          poll = await this.getPoll(polls[0])
+        }
       }
     }
     catch (err) {
@@ -304,14 +306,14 @@ export abstract class FaunaClient {
   }
   
   public static async savePoll(poll: Poll): Promise<Poll> {
-     if (!this.client) {
+    if (!this.client) {
       return undefined
     }
 
     let savedPoll: Poll
 
     if (poll._id) {
-      const existingPoll: Stream = await this.getPoll(poll._id)
+      const existingPoll: Poll = await this.getPoll(poll.id)
 
       if (existingPoll) {
         // Update poll

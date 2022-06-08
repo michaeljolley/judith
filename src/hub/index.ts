@@ -39,6 +39,12 @@ export class IO {
 
       conn.on(BotEvents.RequestCreditRoll, (streamDate: string) => this.requestCreditRoll(streamDate))
 
+      conn.on("onPollStart", (onVoteStartEvent: OnVoteStartEvent) => {
+        this.onVoteStart(onVoteStartEvent)
+      })
+      
+      conn.on("onPollEnd", (onVoteEndEvent: OnVoteEndEvent) => this.onVoteEnd(onVoteEndEvent))
+
       // Ensure the connection is from the bots overlays and not
       // and external actor.
       if (conn.handshake.headers.host !== process.env.HOST &&
@@ -77,10 +83,10 @@ export class IO {
       (onRaidEvent: OnRaidEvent) => this.onRaid(onRaidEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnVote,
       (onVoteEvent: OnVoteEvent) => this.onVote(onVoteEvent))
-    EventBus.eventEmitter.addListener(BotEvents.OnVoteStart,
-      (onVoteStartEvent: OnVoteStartEvent) => this.onVoteStart(onVoteStartEvent))
-    EventBus.eventEmitter.addListener(BotEvents.OnVoteEnd,
-      (onVoteEndEvent: OnVoteEndEvent) => this.onVoteEnd(onVoteEndEvent))
+    // EventBus.eventEmitter.addListener(BotEvents.OnVoteStart,
+    //   (onVoteStartEvent: OnVoteStartEvent) => this.onVoteStart(onVoteStartEvent))
+    // EventBus.eventEmitter.addListener(BotEvents.OnVoteEnd,
+    //   (onVoteEndEvent: OnVoteEndEvent) => this.onVoteEnd(onVoteEndEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnVoteWinner,
       (onVoteWinnerEvent: OnVoteWinnerEvent) => this.onVoteWinner(onVoteWinnerEvent))
   }
@@ -152,21 +158,23 @@ export class IO {
   private requestCreditRoll(streamDate: string) {
     EventBus.eventEmitter.emit(BotEvents.RequestCreditRoll, streamDate)
   }
-
-  private onVote(onVoteEvent: OnVoteEvent) {
-    EventBus.eventEmitter.emit(BotEvents.OnVote, onVoteEvent)
-  }
   
   private onVoteStart(onVoteStartEvent: OnVoteStartEvent) {
     EventBus.eventEmitter.emit(BotEvents.OnVoteStart, onVoteStartEvent)
+    this.io.emit(BotEvents.OnVoteStart, onVoteStartEvent)
   }
   
   private onVoteEnd(onVoteEndEvent: OnVoteEndEvent) {
-    EventBus.eventEmitter.emit(BotEvents.OnVote, onVoteEndEvent)
+    EventBus.eventEmitter.emit(BotEvents.OnVoteEnd, onVoteEndEvent)
+    this.io.emit(BotEvents.OnVoteEnd, onVoteEndEvent)
+  }
+  
+  private onVote(onVoteEvent: OnVoteEvent) {
+    this.io.emit(BotEvents.OnVote, onVoteEvent)
   }
 
   private onVoteWinner(onVoteWinnerEvent: OnVoteWinnerEvent) {
-    EventBus.eventEmitter.emit(BotEvents.OnVoteWinner, onVoteWinnerEvent)
+    this.io.emit(BotEvents.OnVoteWinner, onVoteWinnerEvent)
   }
 
 }

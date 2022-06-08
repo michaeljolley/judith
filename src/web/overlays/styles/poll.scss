@@ -1,109 +1,108 @@
 @import "main";
 
-.chat {
-  display: flex;
-  flex-direction: column-reverse;
-  height: 98vh;
-  position: absolute;
-  right: 0;
-  width: 400px;
+:root {
+  --neonpink: #ff00ff;
+  --neonblue: #00ffff;
 
-  .list-move {
-    transition: transform .5s;
-  }
+  --gradientOpacity: 0.9;
 
-  .message {
-    width: 100%;
-    margin-bottom: 25px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    
-    box-shadow: -0.5em 0.6em 1em -0.4em $darkblue;
+  --pointA: rgba(255, 0, 255, var(--gradientOpacity));
+  --pointB: rgba(204, 54, 255, var(--gradientOpacity));
+  --pointC: rgba(153, 102, 255, var(--gradientOpacity));
+  --pointD: rgba(97, 158, 255, var(--gradientOpacity));
+  --pointE: rgba(51, 204, 255, var(--gradientOpacity));
+  --pointF: rgba(0, 255, 255, var(--gradientOpacity));
 
-    &.hide {
-      box-shadow: none;
-      .panel {
-        animation: fade 1s backwards;
-      }
-    }
-
-    .panel {
-      display: flex;
-      flex-direction: row-reverse;
-      width: 400px;
-      background-color: $darkblue;
-      
-      border-top: 5px solid;
-      border-image-source: $gradient;
-      border-image-slice: 1;
-      
-      opacity: 0;
-      animation: fade 1s forwards;
-      
-      .bubble {
-        padding: 15px;
-        width: 340px;
-        word-wrap: break-word;
-        white-space: pre-line;
-
-        display: flex;
-        flex-direction: column;
-        
-        font-size: 1.2em;
-        color: $white;
-
-        span {
-          color: $neonpink;
-        }
-        
-        .name {
-          font-family: 'Roboto';
-          font-size: .8em;
-          font-weight: bold;
-          background: $gradient;
-          background-clip: text;
-          margin-top: 10px;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-      }
-  
-      .user {
-        width: 60px;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-position-y: bottom;
-        background-color: $white;
-      }    
-    }
-    
-    &.mod {
-      .panel {
-        background-color: $lightgray;
-        .bubble {
-          color: $purple;
-        }
-      }
-    }
- 
-    &.vip {
-      .panel {
-        background-color: $white;
-        .bubble {
-          color: $darkblue;
-        }
-      }
-    }
-  }
+  --gradient: linear-gradient(90deg,
+      var(--neonpink) 0%,
+      var(--neonblue) 100%);
 }
 
-@keyframes fade {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif;
+
+  .chart {
+    display: flex;
+    flex-direction: column;
+
+    .bar {
+      display: flex;
+      align-items: center;
+
+      ul {
+        list-style: none;
+        background-color: rgba(17, 17, 17, 0.7);
+        display: inline-flex;
+        align-items: center;
+        padding: 0 20px;
+        height: 90px;
+    
+        border-right: 4px solid;
+        border-image-slice: 1;
+      }
+
+      img {
+        background: #000;
+        border-radius: 50%;
+        width: 3em;
+      }
+
+      p {
+        color: #fff;
+        margin-left: 20px;
+        font-family: "Roboto";
+        font-size: 1.7rem;
+        text-transform: uppercase;
+      }
+
+      &:nth-child(1) ul {
+        /* background-color: var(--pointA); */
+        border-image-source: linear-gradient(to right,
+            var(--pointA) 0%,
+            var(--pointB) 100%);
+      }
+
+      &:nth-child(2) ul {
+        /* background-color: var(--pointB); */
+        border-image-source: linear-gradient(to right,
+            var(--pointB) 0%,
+            var(--pointC) 100%);
+      }
+
+      &:nth-child(3) ul {
+        /* background-color: var(--pointC); */
+        border-image-source: linear-gradient(to right,
+            var(--pointC) 0%,
+            var(--pointD) 100%);
+      }
+
+      &:nth-child(4) ul {
+        /* background-color: var(--pointD); */
+        border-image-source: linear-gradient(to right,
+            var(--pointD) 0%,
+            var(--pointE) 100%);
+      }
+
+      &.bar:nth-child(5) ul {
+        /* background-color: var(--pointE); */
+        border-image-source: linear-gradient(to right,
+            var(--pointE) 0%,
+            var(--pointF) 100%);
+      }
+    }
+
+    &.done {
+      .bar:not(:first-child) {
+        ul {
+        opacity: 0.5;
+        }
+        p {
+          opacity: 0.5;
+        }
+      }
+    } 
   }
 }
