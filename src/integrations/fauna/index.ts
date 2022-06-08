@@ -1,5 +1,5 @@
 import { FaunaClient } from "./fauna";
-import { Action, LogLevel, log, Stream, User } from "../../common";
+import { Action, LogLevel, log, Stream, User, Poll } from "../../common";
 
 export abstract class Fauna {
 
@@ -104,5 +104,53 @@ export abstract class Fauna {
     }
 
     return action
+  }
+
+  public static async getActivePoll(streamDate: string): Promise<Poll | undefined> {
+    let poll: Poll | undefined
+    try {
+      poll = await FaunaClient.getActivePoll(streamDate)
+    }
+    catch (err) {
+      log(LogLevel.Error, err)
+    }
+
+    return poll
+  }
+  
+  public static async getPoll(pollId: string): Promise<Poll | undefined> {
+    let poll: Poll | undefined
+    try {
+      poll = await FaunaClient.getPoll(pollId)
+    }
+    catch (err) {
+      log(LogLevel.Error, err)
+    }
+
+    return poll
+  }
+  
+  public static async savePoll(poll: Poll): Promise<Poll | undefined> {
+    try {
+      poll = await FaunaClient.savePoll(poll)
+    }
+    catch (err) {
+      log(LogLevel.Error, err)
+    }
+
+    return poll
+  }
+
+  public static async getVotingActions(pollId: string): Promise<Action[] | undefined> {
+    let actions: Action[] | undefined
+
+    try {
+      actions = await FaunaClient.getVotingActions(pollId)
+    }
+    catch (err) {
+      log(LogLevel.Error, err)
+    }
+
+    return actions
   }
 }

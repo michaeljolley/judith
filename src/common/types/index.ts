@@ -20,6 +20,10 @@ export * from './onFollowEvent'
 export * from './onSayEvent'
 export * from './onSoundEffectEvent'
 export * from './onStopEvent'
+export * from './onVoteEndEvent'
+export * from './onVoteStartEvent'
+export * from './onVoteEvent'
+export * from './onVoteWinnerEvent'
 
 export * from './twitchFollowEvent';
 export * from './twitchStreamEvent';
@@ -29,3 +33,4 @@ export * from './action'
 export * from './credit'
 export * from './stream'
 export * from './user'
+export * from './poll'

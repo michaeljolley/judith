@@ -1,3 +1,7 @@
+import { OnVoteEvent } from './../common/types/onVoteEvent';
+import { OnStreamChangeEvent } from './../common/types/onStreamChangeEvent';
+import { OnVoteEndEvent } from './../common/types/onVoteEndEvent';
+import { OnVoteStartEvent } from './../common/types/onVoteStartEvent';
 import throttledQueue from 'throttled-queue';
 import { EventBus  } from '../events'
 import { Fauna, Orbit } from '../integrations'
@@ -14,7 +18,8 @@ import {
   Activity,
   User,
   Credit,
-  OnCreditRollEvent
+  OnCreditRollEvent,
+  OnStreamStartEvent
 } from "../common"
 
 
@@ -31,10 +36,15 @@ export abstract class Logger {
       (onSubEvent: OnSubEvent) => this.onSub(onSubEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnRaid,
       (onRaidEvent: OnRaidEvent) => this.onRaid(onRaidEvent))
+    EventBus.eventEmitter.addListener(BotEvents.OnStreamChange, (onStreamChangeEvent: OnStreamChangeEvent) => this.onStreamChange(onStreamChangeEvent))
     EventBus.eventEmitter.addListener(BotEvents.OnStreamEnd, () => this.onStreamEnd())
     EventBus.eventEmitter.addListener(BotEvents.OnOrbit, (streamDate: string) => this.onOrbit(streamDate))
     EventBus.eventEmitter.addListener(BotEvents.OnFullOrbit, (streamDate: string) => this.onFullOrbit(streamDate))
     EventBus.eventEmitter.addListener(BotEvents.RequestCreditRoll, (streamDate: string) => this.requestCreditRoll(streamDate))
+    EventBus.eventEmitter.addListener(BotEvents.OnVote, (onVoteEvent: OnVoteEvent) => this.onVote(onVoteEvent))
+    EventBus.eventEmitter.addListener(BotEvents.OnVoteStart, (onVoteStartEvent: OnVoteStartEvent) => this.onVoteStart(onVoteStartEvent))
+    EventBus.eventEmitter.addListener(BotEvents.OnVoteEnd, (onVoteEndEvent: OnVoteEndEvent) => this.onVoteEnd(onVoteEndEvent))
+  
   }
 
   private static async onChatMessage(onChatMessageEvent: OnChatMessageEvent) {
@@ -143,12 +153,21 @@ export abstract class Logger {
     )
   }
 
+  private static async onStreamChange(onStreamChangeEvent: OnStreamChangeEvent) {
+    try {
+      const stream = await Fauna.saveStream(onStreamChangeEvent.stream);
+    }
+    catch (err) {
+      log(LogLevel.Error, `Logger: onStreamChange: ${err}`);
+    }
+  }
+
   private static async onStreamEnd() {
     try {
       const stream = await Fauna.getStream(new Date().toLocaleDateString('en-US'));
       if (stream) {
         stream.ended_at = new Date().toISOString();
-       // await Fauna.saveStream(stream);
+        await Fauna.saveStream(stream);
         EventBus.eventEmitter.emit(BotEvents.OnOrbit, stream.streamDate);
       }
     }
@@ -340,4 +359,57 @@ export abstract class Logger {
       log(LogLevel.Error, `State: requestCreditRoll: ${err}`);
     }
   }
+  
+  private static async onVoteStart(onVoteStartEvent: OnVoteStartEvent) {
+    try {
+      let poll = await Fauna.getPoll(onVoteStartEvent.pollId)
+
+      if (poll) {
+        poll.started_at = onVoteStartEvent.started_at
+        poll = await Fauna.savePoll(poll)
+      }
+    }
+    catch (err) {
+      log(LogLevel.Error, `Logger: onVoteStart: ${err}`);
+    }
+  }
+
+  private static async onVoteEnd(onVoteEndEvent: OnVoteEndEvent) {
+    try {
+      let poll = await Fauna.getPoll(onVoteEndEvent.pollId)
+
+      if (poll) {
+        poll.ended_at = onVoteEndEvent.ended_at
+        poll = await Fauna.savePoll(poll)
+      }
+    }
+    catch (err) {
+      log(LogLevel.Error, `Logger: onVoteEnd: ${err}`);
+    }
+  }
+  
+  private static async onVote(onVoteEvent: OnVoteEvent) {
+    const date = new Date()
+    const streamDate = date.toLocaleDateString('en-US');
+
+    await Fauna.saveAction(new Action(
+      streamDate,
+      onVoteEvent.user.id,
+      onVoteEvent.user.display_name || onVoteEvent.user.login,
+      onVoteEvent.user.avatar_url,
+      BotEvents.OnVote,
+      onVoteEvent
+    ))
+
+    await Orbit.addActivity(
+      new Activity(
+        'Voted in poll on Twitch',
+        `Voted in poll on Twitch`,
+        'twitch:vote',
+        `twitch-vote-${onVoteEvent.user.login}-${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`,
+        (new Date(streamDate)).toISOString()),
+      onVoteEvent.user
+    )
+  }
+
 }

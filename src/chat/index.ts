@@ -1,3 +1,5 @@
+import { OnVoteWinnerEvent, PollVotes } from './../common/types/onVoteWinnerEvent';
+import { OnVoteEndEvent } from './../common/types/onVoteEndEvent';
 import ComfyJS, { 
   EmoteSet, 
   OnCheerExtra, 
@@ -11,7 +13,7 @@ import ComfyJS, {
   OnSubMysteryGiftExtra } from 'comfy.js'
 import { SubMethods } from 'tmi.js'
 
-import { BotEvents, log, LogLevel } from '../common'
+import { BotEvents, log, LogLevel, OnVoteEvent, OnVoteStartEvent } from '../common'
 import { 
   Config, 
   OnChatMessageEvent, 
@@ -25,10 +27,11 @@ import {
   OnPointRedemptionEvent, 
   OnCommandEvent } from '../common'
 import { EventBus } from '../events'
-import { Twitch } from '../integrations'
+import { Fauna, Twitch } from '../integrations'
 import { State } from '../state';
 import { CommandMonitor } from './commandMonitor'
 import sanitizeHtml from 'sanitize-html'
+import { FaunaClient } from '../integrations/fauna/fauna';
 
 /**
  * ChatMonitor connects and monitors chat messages within Twitch
@@ -36,6 +39,7 @@ import sanitizeHtml from 'sanitize-html'
 export class ChatMonitor {
 
   commandMonitor: CommandMonitor
+  pollInterval: any
 
   constructor(private config: Config) {
     ComfyJS.onChat = this.onChat.bind(this)
@@ -54,6 +58,10 @@ export class ChatMonitor {
 
     EventBus.eventEmitter.addListener(BotEvents.OnSay,
       (onSayEvent: OnSayEvent) => this.onSay(onSayEvent))
+    EventBus.eventEmitter.addListener(BotEvents.OnVoteStart,
+      async (onVoteStartEvent: OnVoteStartEvent) => await this.onVoteStart(onVoteStartEvent))
+    EventBus.eventEmitter.addListener(BotEvents.OnVoteEnd,
+      async (onVoteEndEvent: OnVoteEndEvent) => await this.onVoteEnd(onVoteEndEvent))
 
     this.commandMonitor = new CommandMonitor()
   }
@@ -77,6 +85,32 @@ export class ChatMonitor {
 
   private onSay(onSayEvent: OnSayEvent) {
     ComfyJS.Say(onSayEvent.message, this.config.twitchChannelName)
+  }
+
+  private async onVoteStart(onVoteStartEvent: OnVoteStartEvent) {
+    
+    log(LogLevel.Info, `onVoteStart: ${JSON.stringify(onVoteStartEvent)}`)
+    this.pollInterval = setInterval(async () => {
+      this.emit(BotEvents.OnVoteEnd, new OnVoteEndEvent(onVoteStartEvent.pollId, new Date().toISOString()))
+    }, onVoteStartEvent.lengthInSeconds * 1000);
+    
+    const poll = await FaunaClient.getPoll(onVoteStartEvent.pollId);
+    if (poll) {
+      ComfyJS.Say(`The ${poll.title} poll has started. Your options are: ${poll.choices.map(m => m.name.toLocaleLowerCase()).join(", ")}`, this.config.twitchChannelName);
+    }
+  }
+
+  private async onVoteEnd(onVoteEndEvent: OnVoteEndEvent) {
+    const poll = await Fauna.getPoll(onVoteEndEvent.pollId)
+    const actions = await Fauna.getVotingActions(poll._id)
+
+    log(LogLevel.Info, `onVoteEnd: ${JSON.stringify(onVoteEndEvent)}`)
+    const votes = actions.map(m => {
+      const eventData = m.eventData as OnVoteEvent
+      return new PollVotes(eventData.user, eventData.choice)
+    })
+
+    this.emit(BotEvents.OnVoteWinner, new OnVoteWinnerEvent(poll.id, poll.title, votes))
   }
 
   /**

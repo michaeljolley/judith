@@ -1,0 +1,108 @@
+@import "main";
+
+:root {
+  --neonpink: #ff00ff;
+  --neonblue: #00ffff;
+
+  --gradientOpacity: 0.9;
+
+  --pointA: rgba(255, 0, 255, var(--gradientOpacity));
+  --pointB: rgba(204, 54, 255, var(--gradientOpacity));
+  --pointC: rgba(153, 102, 255, var(--gradientOpacity));
+  --pointD: rgba(97, 158, 255, var(--gradientOpacity));
+  --pointE: rgba(51, 204, 255, var(--gradientOpacity));
+  --pointF: rgba(0, 255, 255, var(--gradientOpacity));
+
+  --gradient: linear-gradient(90deg,
+      var(--neonpink) 0%,
+      var(--neonblue) 100%);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto", sans-serif;
+
+  .chart {
+    display: flex;
+    flex-direction: column;
+
+    .bar {
+      display: flex;
+      align-items: center;
+
+      ul {
+        list-style: none;
+        background-color: rgba(17, 17, 17, 0.7);
+        display: inline-flex;
+        align-items: center;
+        padding: 0 20px;
+        height: 90px;
+    
+        border-right: 4px solid;
+        border-image-slice: 1;
+      }
+
+      img {
+        background: #000;
+        border-radius: 50%;
+        width: 3em;
+      }
+
+      p {
+        color: #fff;
+        margin-left: 20px;
+        font-family: "Roboto";
+        font-size: 1.7rem;
+        text-transform: uppercase;
+      }
+
+      &:nth-child(1) ul {
+        /* background-color: var(--pointA); */
+        border-image-source: linear-gradient(to right,
+            var(--pointA) 0%,
+            var(--pointB) 100%);
+      }
+
+      &:nth-child(2) ul {
+        /* background-color: var(--pointB); */
+        border-image-source: linear-gradient(to right,
+            var(--pointB) 0%,
+            var(--pointC) 100%);
+      }
+
+      &:nth-child(3) ul {
+        /* background-color: var(--pointC); */
+        border-image-source: linear-gradient(to right,
+            var(--pointC) 0%,
+            var(--pointD) 100%);
+      }
+
+      &:nth-child(4) ul {
+        /* background-color: var(--pointD); */
+        border-image-source: linear-gradient(to right,
+            var(--pointD) 0%,
+            var(--pointE) 100%);
+      }
+
+      &.bar:nth-child(5) ul {
+        /* background-color: var(--pointE); */
+        border-image-source: linear-gradient(to right,
+            var(--pointE) 0%,
+            var(--pointF) 100%);
+      }
+    }
+
+    &.done {
+      .bar:not(:first-child) {
+        ul {
+        opacity: 0.5;
+        }
+        p {
+          opacity: 0.5;
+        }
+      }
+    } 
+  }
+}

@@ -19,4 +19,5 @@ export * from './store';
 export * from './theme';
 export * from './twitter';
 export * from './uses';
+export * from './vote';
 export * from './youtube';

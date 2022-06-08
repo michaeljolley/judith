@@ -19,5 +19,10 @@ export enum BotEvents {
   OnOrbit = 'onOrbit',
   OnFullOrbit = 'onFullOrbit',
 
+  OnVote = 'onVote',
+  OnVoteStart = 'onVoteStart',
+  OnVoteEnd = 'onVoteEnd',
+  OnVoteWinner = 'onVoteWinner',
+
   RequestCreditRoll = 'requestCreditRoll'
 }
