@@ -1,3 +1,4 @@
+import { OnChatMessageEvent } from './../common/types/onChatMessageEvent';
 import { OnVoteWinnerEvent, PollVotes } from './../common/types/onVoteWinnerEvent';
 import { OnVoteEndEvent } from './../common/types/onVoteEndEvent';
 import ComfyJS, { 
@@ -149,7 +150,7 @@ export class ChatMonitor {
       }
 
       if (userInfo) {
-        const processedChat = this.processChat(message, extra.messageEmotes);
+        const processedChat = this.processChat(message, flags, extra.messageEmotes);
         if (processedChat.message.length > 0) {
           this.emit(BotEvents.OnChatMessage, new OnChatMessageEvent(userInfo, message, processedChat.message, flags, self, extra, extra.id, modResult.rating, processedChat.emotes))
         }
@@ -160,10 +161,11 @@ export class ChatMonitor {
     }
   }
 
-  private processChat(message: string, messageEmotes?: EmoteSet) {
+  private processChat(message: string, flags: OnMessageFlags, messageEmotes?: EmoteSet) {
     let tempMessage: string = message.replace(/<img/gi, '<DEL');
 
     const emotes = [];
+    const theme = (flags.vip || flags.mod) ? "light" : "dark";
 
     // If the message has emotes, modify message to include img tags to the emote
     if (messageEmotes) {
@@ -172,7 +174,7 @@ export class ChatMonitor {
       for (const emote of Object.keys(messageEmotes)) {
         const emoteLocations = messageEmotes[emote];
         emoteLocations.forEach(location => {
-          emoteSet.push(this.generateEmote(emote, location));
+          emoteSet.push(this.generateEmote(emote, location, theme));
         });
       }
 
@@ -218,12 +220,12 @@ export class ChatMonitor {
     return { message: tempMessage, emotes: emotes.map(m => m.emoteImageTag as string) };
   }
 
-  private generateEmote(emoteId: string, position: string) {
+  private generateEmote(emoteId: string, position: string, theme: string) {
     const [start, end] = position.split('-').map(Number);
 
     return {
       emoteId,
-      emoteImageTag: `<img class='emote' src='https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default'/>`,
+      emoteImageTag: `<img class='emote' src='https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/${theme}/3.0'/>`,
       emoteUrl: `https://static-cdn.jtvnw.net/emoticons/v1/${emoteId}/1.0`,
       start,
       end
