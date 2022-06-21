@@ -151,7 +151,7 @@ export class ChatMonitor {
       if (userInfo) {
         const processedChat = this.processChat(message, extra.messageEmotes);
         if (processedChat.message.length > 0) {
-          this.emit(BotEvents.OnChatMessage, new OnChatMessageEvent(userInfo, message, message, flags, self, extra, extra.id, modResult.rating, processedChat.emotes))
+          this.emit(BotEvents.OnChatMessage, new OnChatMessageEvent(userInfo, message, processedChat.message, flags, self, extra, extra.id, modResult.rating, processedChat.emotes))
         }
         if (flags.customReward) {
           this.emit(BotEvents.OnPointRedemption, new OnPointRedemptionEvent(userInfo, message, flags, self, extra))
@@ -223,7 +223,7 @@ export class ChatMonitor {
 
     return {
       emoteId,
-      emoteImageTag: `<img class='emote' src='https://static-cdn.jtvnw.net/emoticons/v1/${emoteId}/1.0'/>`,
+      emoteImageTag: `<img class='emote' src='https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default'/>`,
       emoteUrl: `https://static-cdn.jtvnw.net/emoticons/v1/${emoteId}/1.0`,
       start,
       end
