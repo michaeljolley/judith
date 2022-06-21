@@ -1,4 +1,3 @@
-import { OnChatMessageEvent } from './../common/types/onChatMessageEvent';
 import { OnVoteWinnerEvent, PollVotes } from './../common/types/onVoteWinnerEvent';
 import { OnVoteEndEvent } from './../common/types/onVoteEndEvent';
 import ComfyJS, { 
