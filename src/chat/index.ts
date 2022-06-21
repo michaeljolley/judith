@@ -13,7 +13,7 @@ import ComfyJS, {
   OnSubMysteryGiftExtra } from 'comfy.js'
 import { SubMethods } from 'tmi.js'
 
-import { BotEvents, log, LogLevel, OnVoteEvent, OnVoteStartEvent } from '../common'
+import { BotEvents, log, LogLevel, OnVoteEvent, OnVoteStartEvent, ModerationRating } from '../common'
 import { 
   Config, 
   OnChatMessageEvent, 
@@ -28,6 +28,7 @@ import {
   OnCommandEvent } from '../common'
 import { EventBus } from '../events'
 import { Fauna, Twitch } from '../integrations'
+import { Moderator } from './moderator'
 import { State } from '../state';
 import { CommandMonitor } from './commandMonitor'
 import sanitizeHtml from 'sanitize-html'
@@ -70,6 +71,7 @@ export class ChatMonitor {
    * Initializes chat to connect to Twitch and begin listening
    */
   public init(): void {
+    Moderator.init()
     ComfyJS.Init(this.config.twitchBotUsername, this.config.twitchBotAuthToken, this.config.twitchChannelName, (globalThis.loglevel === "development"))
   }
 
@@ -139,10 +141,17 @@ export class ChatMonitor {
         log(LogLevel.Error, `onChat: ${err}`)
       }
 
+      // Moderate message
+      const modResult = await Moderator.review(message)
+
+      if (modResult.rating === ModerationRating.Explicit) {
+        return
+      }
+
       if (userInfo) {
         const processedChat = this.processChat(message, extra.messageEmotes);
         if (processedChat.message.length > 0) {
-          this.emit(BotEvents.OnChatMessage, new OnChatMessageEvent(userInfo, message, processedChat.message, flags, self, extra, extra.id, processedChat.emotes))
+          this.emit(BotEvents.OnChatMessage, new OnChatMessageEvent(userInfo, message, message, flags, self, extra, extra.id, modResult.rating, processedChat.emotes))
         }
         if (flags.customReward) {
           this.emit(BotEvents.OnPointRedemption, new OnPointRedemptionEvent(userInfo, message, flags, self, extra))

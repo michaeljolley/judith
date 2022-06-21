@@ -31,6 +31,7 @@ export * from './twitchStreamEvent';
 export * from './activity'
 export * from './action'
 export * from './credit'
+export * from './moderationResult'
+export * from './poll'
 export * from './stream'
 export * from './user'
-export * from './poll'

@@ -56,7 +56,9 @@ const app = new Vue({
     this.socket = io.connect('/');
 
     this.socket.on('onChatMessage', onChatMessageEvent => {
-      this.addMessage(onChatMessageEvent);
+      if (onChatMessageEvent.moderationRating === "normal") {
+        this.addMessage(onChatMessageEvent);
+      }
     });
 
     this.socket.on('reconnect', () => {

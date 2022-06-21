@@ -1,3 +1,4 @@
+import { ModerationRating } from './moderationResult';
 import { OnMessageExtra, OnMessageFlags } from "comfy.js"
 import { User } from "./user"
 import { IUserEvent } from "./IUserEvent"
@@ -11,6 +12,7 @@ export class OnChatMessageEvent implements IUserEvent {
     public self: boolean,
     public extra: OnMessageExtra,
     public id: string,
+    public moderationRating: ModerationRating,
     public emotes?: string[],
   ) { }
 }

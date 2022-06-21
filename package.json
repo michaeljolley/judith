@@ -28,6 +28,8 @@
   },
   "homepage": "https://github.com/builders-club/judith#readme",
   "dependencies": {
+    "@azure/cognitiveservices-contentmoderator": "^5.0.1",
+    "@azure/ms-rest-azure-js": "^2.1.0",
     "axios": "^0.26.0",
     "comfy.js": "^1.1.13",
     "cron": "^1.8.2",
