@@ -1,6 +1,7 @@
 export * from './_soundEffect';
 
 export * from './attention';
+export * from './azure';
 export * from './blog';
 export * from './conduct';
 export * from './discord';

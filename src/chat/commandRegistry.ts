@@ -1,5 +1,6 @@
 import { 
   attention,
+  azure,
   blog,
   conduct,
   discord,
@@ -27,6 +28,7 @@ export abstract class CommandRegistry {
     this.commands = []
 
     this.commands.push(new Command('attention', attention))
+    this.commands.push(new Command('azure', azure))
     this.commands.push(new Command('blog', blog))
     this.commands.push(new Command('conduct', conduct))
     this.commands.push(new Command('discord', discord))
